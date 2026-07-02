@@ -67,3 +67,37 @@ After completing tasks 1–7:
 - JUnit Jupiter 5.11
 - AssertJ 3.26
 - Mockito 5.14 (used in `task5` for mocking a dependency)
+
+## Task 8: Coverage Analysis
+
+Ran full test suite with IntelliJ coverage (Run 'test' with Coverage).
+
+### Overall results
+- Total instruction coverage: 55%
+- Total branch coverage: 60%
+- Core packages (task1, task23, task4, task5, task6) range from 62% to 100% branch coverage.
+- `model` package coverage is low (3% branches) - needs a dedicated AnimalTest.
+- `stretch` package is a bonus goal, not fully covered by design.
+
+### Identified untested branches
+
+1. **`AnimalCsvParser.parseFile()` - empty file branch**
+   The `if (header == null)` branch (completely empty file, not even a header row)
+   is not covered by any test. Existing tests cover "header only" but not
+   "zero bytes".
+   → Adding this test matters: a real user could upload a truly empty CSV file,
+   and without a test we can't guarantee it returns an empty ParseResult
+   instead of throwing an unexpected exception.
+
+2. **`AnimalSorter.sortBySpeciesThenAgeDescending()` - single-species / empty list**
+   Branch coverage is only 62% for this class. The comparator logic
+   (species alphabetical, then age descending) is tested with a mixed list,
+   but not with an empty list or a list containing only one species.
+   → This matters because a future refactor of the comparator chain could
+   silently break the "then age descending" part while still passing the
+   happy-path test, if the untested edge case isn't there to catch it.
+
+### Conclusion
+Both branches represent realistic edge cases (empty input, single-group input)
+that are common in production data. Adding tests for them would catch
+regressions that the current "happy path" tests would miss.
